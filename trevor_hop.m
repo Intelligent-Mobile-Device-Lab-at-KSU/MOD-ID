@@ -38,7 +38,7 @@ nend = 1000000; % Controls how many windows are processed. Set to large number (
 myfs = []; %Container for peak locations in f
 % Control variable in case the FFT does not reveal a strong peak
 noPeaksPreviously = 0;
-
+mypow=[];
 % Will display the Aligned Doppler Spectrum for all processed windows in real-time
 displayDopplerProfile_in_RealTime = 0;
 
@@ -49,8 +49,8 @@ displayDopplerSpectra_in_RealTime = 0;
 % Will compute and display the Unaligned Doppler Profile
 showUnalignedDopplerProfile = 0;
 
-dirpath0 = 'CCSVDopler_9_1/';
-fname = 'two_car_approaching'; % Input raw data file name
+dirpath0 = 'raw/';
+fname = 'inden10_4_rccar'; % Input raw data file name
 x = read_complex_binary ([dirpath0 fname '.dat'],100e9); % Reads the complex-binary data
 
 L = length(x);
@@ -76,6 +76,14 @@ for currSlideLoc = 0:FTDP_adv_samps:L-wind
     N = 10000;
     M = 10000;
     segment = x(windLoc);
+        if 0
+            mypow(FTDP_Window_ind,:)=mean(abs(segment).^2);
+    end
+     if(currTime>=5)
+    %     [cfs,frq] = cwt(segment,Fs);
+   % pause
+    
+     end
     %Fx = fft(blackman(length(segment)).*segment);
     %MFxPos = abs(Fx);%abs(Fx(wind/2+1:end));%abs(Fx(1:wind/2));
     
@@ -84,15 +92,17 @@ for currSlideLoc = 0:FTDP_adv_samps:L-wind
     %plot(MFxPos);
     %drawnow
     %continue
-    Fx = fftshift(fft(segment));
+    Fx = fftshift(fft(blackman(length(segment)).*segment));
     MFxPos = abs(Fx);%abs(Fx(wind/2+1:end));%abs(Fx(1:wind/2));
-    %MFxPos(length(Fx)/2-500:length(Fx)/2+500) = 0;
+    MFxPos(length(Fx)/2-10000:length(Fx)/2+10000) = 0;
     %MFxPos(1:M) = 0;
     %MFxPos(end-N:end) = 0;
     FTDP_Window(FTDP_Window_ind,:) = MFxPos;
-    %plot(MFxPos);
-    %drawnow
-    %continue
+    if 0
+    plot(MFxPos);
+    drawnow
+    continue
+    end
     
     locs = findLocs(MFxPos);
     if isempty(locs)
@@ -117,18 +127,25 @@ for currSlideLoc = 0:FTDP_adv_samps:L-wind
        %plot(f,MFxPos);
        %break;
     end
-    if(currTime>=5)
+    if(currTime>=1)
         pp=locs(1);
-        if pp>100000-2000
-            continue;
-        end
-        %MFxPos(pp-20:pp+19)=0;
+        %if pp>100000-2000
+        %    continue;
+        %end
+        
+        MFxPos(pp-5:pp+4)=0;
+        
         %plot(MFxPos);
         %drawnow
         %continue
-        Direct_Window(FTDP_Window_ind,:)= MFxPos(pp-10000:pp+9999);
-        plot(Direct_Window(FTDP_Window_ind,:))
+        Direct_Window(FTDP_Window_ind,:)= MFxPos(pp-100:pp+99);
+         if 1
+            mypow(FTDP_Window_ind,:)=mean(MFxPos(pp-100:pp+99));
+    end
+        if 1
+        plot(MFxPos(pp-100:pp+99))
         drawnow
+        end
         %plot(MFxPos(pp-500:pp+499))
         %drawnow
             end
@@ -177,8 +194,8 @@ typ = Direct_Window(1:rr,:);
 if mean(f_FTDP) < 0
     %typ = fliplr(FTDP_Window(1:rr,:));
 end
-ampmin=max(max(abs(typ.')))/1000;
-imagesc(t_FTDP(1:rr),[-10000:9999],20*log10(max(abs(typ.'),ampmin)/ampmin));
+ampmin=max(max(abs(typ.')))/2;
+imagesc(t_FTDP(1:rr),[-100:99],20*log10(max(abs(typ.'),ampmin)/ampmin));
 title(['Spectrogram: ' fname],'Interpreter','none')
 ylabel('Frequency (Hz)')
 xlabel('Time (s)')

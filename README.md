@@ -12,6 +12,9 @@ This is the most up to date matlab file that is used for processing the output f
 ### testrfid.grc  
 This is the most up to date gnuradio companion file that we have been using to test in the field.
 
+### mod-id.stl  
+This is the 3d design model for the most up to date mod-id case being used for field tests.
+
 ### ./uhd_drivers  
 Recently, we have been developing this project on Windows. Because nothing really plays well with Windows, your version of GNURadio might not recognize the USRP B200mini-i as a SDR (for me it appeared as `westbridge`). To fix this, follow these instructions:  
 1.) Open the device manager and plug in the USRP device. You will see an unrecognized USB device in the device manager.  

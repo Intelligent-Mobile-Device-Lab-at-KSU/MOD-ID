@@ -50,7 +50,7 @@ displayDopplerSpectra_in_RealTime = 0;
 showUnalignedDopplerProfile = 0;
 
 dirpath0 = 'raw/';
-fname = 'inden10_4_rccar'; % Input raw data file name
+fname = 'test1013'; % Input raw data file name rccartwosdrs
 x = read_complex_binary ([dirpath0 fname '.dat'],100e9); % Reads the complex-binary data
 
 L = length(x);
@@ -93,8 +93,9 @@ for currSlideLoc = 0:FTDP_adv_samps:L-wind
     %drawnow
     %continue
     Fx = fftshift(fft(blackman(length(segment)).*segment));
+    %Fx = fftshift(fft(segment));
     MFxPos = abs(Fx);%abs(Fx(wind/2+1:end));%abs(Fx(1:wind/2));
-    MFxPos(length(Fx)/2-10000:length(Fx)/2+10000) = 0;
+    MFxPos(length(Fx)/2-1000:length(Fx)/2+1000) = 0;
     %MFxPos(1:M) = 0;
     %MFxPos(end-N:end) = 0;
     FTDP_Window(FTDP_Window_ind,:) = MFxPos;
@@ -133,16 +134,16 @@ for currSlideLoc = 0:FTDP_adv_samps:L-wind
         %    continue;
         %end
         
-        MFxPos(pp-5:pp+4)=0;
+        %MFxPos(pp-5:pp+4)=0;
         
         %plot(MFxPos);
         %drawnow
         %continue
         Direct_Window(FTDP_Window_ind,:)= MFxPos(pp-100:pp+99);
-         if 1
+         if 0
             mypow(FTDP_Window_ind,:)=mean(MFxPos(pp-100:pp+99));
     end
-        if 1
+        if 0
         plot(MFxPos(pp-100:pp+99))
         drawnow
         end
@@ -194,7 +195,7 @@ typ = Direct_Window(1:rr,:);
 if mean(f_FTDP) < 0
     %typ = fliplr(FTDP_Window(1:rr,:));
 end
-ampmin=max(max(abs(typ.')))/2;
+ampmin=max(max(abs(typ.')))/1000;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         ;
 imagesc(t_FTDP(1:rr),[-100:99],20*log10(max(abs(typ.'),ampmin)/ampmin));
 title(['Spectrogram: ' fname],'Interpreter','none')
 ylabel('Frequency (Hz)')

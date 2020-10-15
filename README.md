@@ -18,3 +18,4 @@ Recently, we have been developing this project on Windows. Because nothing reall
 2.) Right click on the unrecognized USB device and select update/install driver software (may vary for your OS).  
 3.) In the driver installation wizard, select "browse for driver", browse to the path/to/this/repo/uhd_drivers. If you are given option to select a specific driver, select the driver for your device. Otherwise, just selecting this directory will do the trick.  
 4.) Continue through the installation wizard until the driver is installed.  
+([source](https://files.ettus.com/manual/page_transport.html#transport_usb_installwin))

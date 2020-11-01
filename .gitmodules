@@ -1,3 +1,6 @@
 [submodule "custom_python_blocks"]
 	path = custom_python_blocks
 	url = https://github.com/Intelligent-Mobile-Device-Lab-at-KSU/custom_python_blocks
+[submodule "mod-id-data"]
+	path = mod-id-data
+	url = git@github.com:Intelligent-Mobile-Device-Lab-at-KSU/mod-id-data.git

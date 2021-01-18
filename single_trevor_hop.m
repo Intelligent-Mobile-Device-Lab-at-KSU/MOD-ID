@@ -1,9 +1,8 @@
 %% Define Constants
 f0= 5.860e9;%5.89e9;
 lambda = physconst('LightSpeed')/f0;
-Fs = 10e6; % Samples/Sec, sampling rate
-Fsc = 0e3; %variable
-
+Fs = 1e6; % Samples/Sec, sampling rate
+Fsc = 0; %variable
 
 %% Select Doppler Profile Resolution
 highres=0;
@@ -28,6 +27,7 @@ f = ((-wind/2:wind/2 -1)*Fs/wind)'; % both sides of FFT
 f_FTDP = f; % Get FTDP frequency range
 
 %% Doppler Processing
+
 Fcfo = []; % Holder for CFO Measurement
 FTDP_Window_Doppler_Unaligned = []; % Holder for FTDP Unaligned Doppler
 FTDP_Window_Doppler = []; % Holder for FTDP Aligned Doppler
@@ -50,17 +50,17 @@ displayDopplerSpectra_in_RealTime = 0;
 % Will compute and display the Unaligned Doppler Profile
 showUnalignedDopplerProfile = 0;
 
-dirpath0 = 'ccsv_1_18/';
-fname = 'cw_2car_chengAA_trevorCC4'; % Input raw data file name rccartwosdrs
+dirpath0 = 'red_car2/';
+fname = 'tester'; % Input raw data file name rccartwosdrs
 x = read_complex_binary ([dirpath0 fname '.dat'],100e9); % Reads the complex-binary data
 
 L = length(x);
 for currSlideLoc = 0:FTDP_adv_samps:L-wind
-    
+
     if  FTDP_Window_ind > nend
         break;
     end
-    
+
     % Get window location and update t_FTDP (time vector)
     currTime = 0;
     if currSlideLoc == 0
@@ -80,14 +80,14 @@ for currSlideLoc = 0:FTDP_adv_samps:L-wind
         if 0
             mypow(FTDP_Window_ind,:)=mean(abs(segment).^2);
     end
-     if(currTime<=3)
+     if(currTime>=5)
     %     [cfs,frq] = cwt(segment,Fs);
    % pause
-    continue
+
      end
     %Fx = fft(blackman(length(segment)).*segment);
     %MFxPos = abs(Fx);%abs(Fx(wind/2+1:end));%abs(Fx(1:wind/2));
-    
+
     %MFxPos(1:M) = 0;
     %MFxPos(end-N:end) = 0;
     %plot(MFxPos);
@@ -96,23 +96,16 @@ for currSlideLoc = 0:FTDP_adv_samps:L-wind
     Fx = fftshift(fft(blackman(length(segment)).*segment));
     %Fx = fftshift(fft(segment));
     MFxPos = abs(Fx);%abs(Fx(wind/2+1:end));%abs(Fx(1:wind/2));
-    MFxPos(length(Fx)/2-5:length(Fx)/2+4) = 0;
+    MFxPos(length(Fx)/2-1000:length(Fx)/2+1000) = 0;
     %MFxPos(1:M) = 0;
     %MFxPos(end-N:end) = 0;
-    pp=length(Fx)/2;
-    mm = 100;
-
-    FTDP_Window(FTDP_Window_ind,:) = MFxPos(pp-mm:pp+mm-1);
-    if 1
-    plot(MFxPos(pp-mm:pp+mm-1));
+    FTDP_Window(FTDP_Window_ind,:) = MFxPos;
+    if 0
+    plot(MFxPos);
     drawnow
-    %continue
-    end
-    FTDP_Window_ind = FTDP_Window_ind +1;
-    clc
-    fprintf('Working %s: %.2f%% Complete\r',fname,100*(currSlideLoc/(L-wind)))
     continue
-    
+    end
+
     locs = findLocs(MFxPos);
     if isempty(locs)
        display('Flag1: Empty locs')
@@ -141,9 +134,9 @@ for currSlideLoc = 0:FTDP_adv_samps:L-wind
         %if pp>100000-2000
         %    continue;
         %end
-        
+
         %MFxPos(pp-5:pp+4)=0;
-        
+
         %plot(MFxPos);
         %drawnow
         %continue
@@ -164,52 +157,60 @@ for currSlideLoc = 0:FTDP_adv_samps:L-wind
         V = [-450000 -350000 -250000 -150000 -50000 50000 150000 250000 350000 450000];
         T = f(locs(1)) - V;
         [val,pos] = min(abs(T));
-        
+
         CFOfine = f(locs(1))-0;%-V(pos);
     %elseif f(locs(1))<250000
      %   CFOfine = f(locs(1))+250000;
     %end
     Fcfo = [Fcfo abs(f(locs(1))-V(pos))];
     segment = segment.*exp(-1i.*2.*pi.*CFOfine.*[1:length(segment)]'.*(1/Fs));
-    
+
     %CFOfine = V(pos) - 300000;
     %segment = segment.*exp(-1i.*2.*pi.*CFOfine.*[1:length(segment)]'.*(1/Fs));
-    
+
      % Obtain corrected spectrum, which is the Doppler Profile for the
     % current window.
     Fx = fft(hann(wind).*segment);
     MFxPos = abs(Fx);%abs(Fx(wind/2+1:end));%abs(Fx(1:wind/2));
-    %MFxPos(1:2000) = 0;
+    MFxPos(1:2000) = 0;
     if noPeaksPreviously
         FTDP_Window_Doppler(FTDP_Window_ind,:) = MFxPos;
     else
         % Need to code: Estimate Doppler Profiles between noPeaks segement 
         % and current segment. For now just treat as normal.
-        
+
         % <code to estimate missed segments>
-        
+
         FTDP_Window_Doppler(FTDP_Window_ind,:) = MFxPos;
     end
-    
+
     % Update the FTDP window index and report status
     FTDP_Window_ind = FTDP_Window_ind +1;
     clc
-    fprintf('Working %s: %.2f%% Complete\r',fname,100*(currSlideLoc/(L-wind)))
+    fprintf('Working %s: %.2f%% Complete, file %i/%i\r',fname,100*(currSlideLoc/(L-wind)), findex-2, length(all_files)-2);
 end
+%     directory = "mod-id-data/CCSV/";
+%     directory = strcat(directory, dirpath0);
+%     directory = strcat(directory, "\");
+dirtory = dirpath0;
+save_fname=strcat(string(directory), string(fname));
+save_fname = strcat(save_fname, ".mat");
+disp(save_fname);
+save(save_fname, 'Direct_Window', 't_FTDP', 'f_FTDP');
 
 %% Show Spectrogram
-[rr cc ll] = size(FTDP_Window);
-typ = FTDP_Window(1:rr,:);
-if mean(f_FTDP) < 0
-    %typ = fliplr(FTDP_Window(1:rr,:));
-end
-ampmin=max(max(abs(typ.')))/100;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         ;
-imagesc(t_FTDP(1:rr),[-mm:(mm-1)],20*log10(max(abs(typ.'),ampmin)/ampmin));
-title(['Spectrogram: ' fname],'Interpreter','none')
-ylabel('Frequency (Hz)')
-xlabel('Time (s)')
-NumTicks = 4;
-L = get(gca,'XLim');
-set(gca,'XTick',round(linspace(t_FTDP(1),t_FTDP(end),NumTicks)))
-axis('xy')
-colorbar
+% [rr cc ll] = size(Direct_Window);
+% typ = Direct_Window(1:rr,:);
+% if mean(f_FTDP) < 0
+%     %typ = fliplr(FTDP_Window(1:rr,:));
+% end
+% ampmin=max(max(abs(typ.')))/200;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         ;
+% imagesc(t_FTDP(1:rr),[-100:99],20*log10(max(abs(typ.'),ampmin)/ampmin));
+% title(['Spectrogram: ' fname],'Interpreter','none')
+% ylabel('Frequency (Hz)')
+% xlabel('Time (s)')
+% NumTicks = 4;
+% L = get(gca,'XLim');
+% set(gca,'XTick',round(linspace(t_FTDP(1),t_FTDP(end),NumTicks)))
+% axis('xy')
+% colorbar

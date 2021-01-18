@@ -28,17 +28,17 @@ f_FTDP = f; % Get FTDP frequency range
 
 %% Doppler Processing
 current_direct = pwd;
-current_direct = [current_direct '\frequency_jumping_rfid'];
-directory = '\mod-id-data\CCSV\';
-dirpath0 = 'red_car\';
+current_direct = [current_direct];
+directory = '\data\';
+dirpath0 = '';
 directory = [current_direct directory dirpath0];%strcat(directory, dirpath0);
 disp("using directory: ");
 disp(directory);
 all_files = dir(directory);
 
 disp("Found:");
-disp(all_files);
-for findex = 3: length(all_files)-1
+disp(all_files(3).name);
+for findex = 3: length(all_files)
     Fcfo = []; % Holder for CFO Measurement
     FTDP_Window_Doppler_Unaligned = []; % Holder for FTDP Unaligned Doppler
     FTDP_Window_Doppler = []; % Holder for FTDP Aligned Doppler

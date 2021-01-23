@@ -17,7 +17,7 @@ end
 %% Get Files List
 current_direct = pwd;
 current_direct = [current_direct];
-directory = '\data\';
+directory = '\single_freq\data\';
 dirpath0 = '';
 directory = [current_direct directory dirpath0];%strcat(directory, dirpath0);
 disp("using directory: ");
@@ -167,7 +167,7 @@ end
     save_fname=strcat(string(directory), string(fname));
     save_fname = strcat(save_fname, ".mat");
     disp(save_fname);
-    save(save_fname, 'FTDP_Window', 't_FTDP', 'f_FTDP');
+    save(save_fname, 'FTDP_Window', 't_FTDP', 'f_FTDP', 'myfs');
     disp('creating figures');
     
     

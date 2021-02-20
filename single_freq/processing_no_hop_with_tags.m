@@ -1,5 +1,5 @@
-dirpath0 = 'ccsv_1_18/';
-fname = 'cw_car approach'; % Input raw data file name rccartwosdrs
+dirpath0 = '2_10_Q_data/';
+fname = 'test_AA_3'; % Input raw data file name rccartwosdrs
 x = read_complex_binary ([dirpath0 fname '.dat'],100e9); % Reads the complex-binary data
 
 %% Define Constants
@@ -78,6 +78,7 @@ for currSlideLoc = 0:FTDP_adv_samps:L-wind
     end
 
     %Remove burst of energy
+    % changing this one to test it
     [pks locs]=findpeaks(obswindow./max(obswindow),'MINPEAKHEIGHT',.29,'MINPEAKDISTANCE',10); %leave these settings
     
     if debugplots
@@ -96,7 +97,7 @@ for currSlideLoc = 0:FTDP_adv_samps:L-wind
        myfsvals = [myfsvals 0];
     else 
         obswindow(length(obswindow)/2-5:length(obswindow)/2+4) = 0; % remove carrier
-        [pks locs]=findpeaks(obswindow./max(obswindow),'MINPEAKHEIGHT',.70,'MINPEAKDISTANCE',10); %leave these settings
+        [pks locs]=findpeaks(obswindow./max(obswindow),'MINPEAKHEIGHT',20,'MINPEAKDISTANCE',10); %leave these settings
         if length(locs) > 2
             obswindow = obswindow.*0;
         end

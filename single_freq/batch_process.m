@@ -2,7 +2,7 @@
 f0= 5.860e9;%5.89e9;
 lambda = physconst('LightSpeed')/f0;
 Fs = 10e6; % Samples/Sec, sampling rate
-Fsc = 0e3; %variable
+Fsc = 10e3; %variable
 
 %% Select Doppler Profile Resolution
 highres=0;
@@ -11,13 +11,13 @@ if highres
     winddur = 1;%1; % s, fft window duration
 else
     FTDP_adv = 5e-2;%5e-3; % s, sliding window advancement duration
-    winddur = .1;%1; % s, fft window duration
+    winddur = .4;%1; % s, fft window duration
 end
 
 %% Get Files List
 current_direct = pwd;
 current_direct = [current_direct];
-directory = '\single_freq\data\';
+directory = '\frequency_jumping_rfid\single_freq\data\';
 dirpath0 = '';
 directory = [current_direct directory dirpath0];%strcat(directory, dirpath0);
 disp("using directory: ");
@@ -30,7 +30,6 @@ dat_files = all_files;
 dat_L = 1;
 
 disp("Found:");
-
 % loop through everything in the directory, and pull out 
 % all .dat files
 for findex = 1: size(all_files,1)
@@ -65,7 +64,7 @@ for findex = 1: dat_L
     f_FTDP = f; % Get FTDP frequency range
 
     pp=wind/2;
-    mm = 100;
+    mm =70;
     f_FTDP = f_FTDP(pp-mm:pp+mm-1);
     
 %% Doppler Processing
@@ -74,6 +73,8 @@ for findex = 1: dat_L
     nend = 1000000; % Controls how many windows are processed. Set to large number (1000000) as infinity
     myfs = []; %Container for peak locations in f
     myfsvals = []; % c
+    myTag_AA = [];
+    myTag_CC = [];
     debugplots = 0;
     pauseafterdebugplot = 0;
     %
@@ -120,7 +121,7 @@ for currSlideLoc = 0:FTDP_adv_samps:L-wind
     end
     
     %Remove burst of energy
-    [pks locs]=findpeaks(obswindow./max(obswindow),'MINPEAKHEIGHT',.29,'MINPEAKDISTANCE',10); %leave these settings
+    [pks locs]=findpeaks(obswindow./max(obswindow),'MINPEAKHEIGHT',.95,'MINPEAKDISTANCE',10); %leave these settings
     
     if debugplots
         hold on
@@ -136,15 +137,40 @@ for currSlideLoc = 0:FTDP_adv_samps:L-wind
        FTDP_Window(FTDP_Window_ind,:) = zeros(1,length(obswindow));
        myfs = [myfs 0];
        myfsvals = [myfsvals 0];
+       myTag_AA = [myTag_AA 0];
+       myTag_CC = [myTag_CC 0];
     else 
         obswindow(length(obswindow)/2-5:length(obswindow)/2+4) = 0; % remove carrier
-        [pks locs]=findpeaks(obswindow./max(obswindow),'MINPEAKHEIGHT',.70,'MINPEAKDISTANCE',10); %leave these settings
-        if length(locs) > 2
-            obswindow = obswindow.*0;
-        end
+        [pks locs]=findpeaks(obswindow./max(obswindow),'MINPEAKHEIGHT',.5,'MINPEAKDISTANCE',10); %leave these settings
+%         if length(locs) > 2
+%             obswindow = obswindow.*0;
+%         end
         [val,pos]=max(pks);
         myfsvals = [myfsvals obswindow(locs(pos))];
         myfs = [myfs f_FTDP(locs(pos))];
+        tag_pp=wind/2;
+        tag_mm = 2*50000;
+        %figure
+        %set(gcf, 'Position',  [100, 100, 1100, 850])
+
+    %     Fx(5000001-100:5000001+100) = 0;
+    %     notch_segment = fftshift(ifft(Fx));
+    %     new_segFx = fftshift(fft(blackman(length(notch_segment)).*notch_segment));
+        t_obswindow = segment(tag_pp-tag_mm:tag_pp+tag_mm-1);
+        f_obswindow = Fx(tag_pp-tag_mm:tag_pp+tag_mm-1);
+        %subplot(1,3,3);plot(abs(f_obswindow));title('|Y(f)|')
+        N=20;
+        xcc=[ones(1,N).*exp(1i*0) ones(1,N).*exp(1i*0) ones(1,N).*exp(1i*pi)  ones(1,N).*exp(1i*pi) ones(1,N).*exp(1i*0) ones(1,N).*exp(1i*0)  ones(1,N).*exp(1i*pi)  ones(1,N).*exp(1i*pi)].';
+        mf_xcc = conj(xcc(end:-1:1));
+
+        xaa=[ones(1,N).*exp(1i*0)  ones(1,N).*exp(1i*pi) ones(1,N).*exp(1i*0)  ones(1,N).*exp(1i*pi) ones(1,N).*exp(1i*0)  ones(1,N).*exp(1i*pi) ones(1,N).*exp(1i*0)  ones(1,N).*exp(1i*pi) ones(1,N).*exp(1i*0)  ones(1,N).*exp(1i*pi)].';
+        mf_xaa = conj(xaa(end:-1:1));
+
+        y_xcc = filter(mf_xcc,1,t_obswindow);
+        y_xaa = filter(mf_xaa,1,t_obswindow);
+
+        myTag_CC = [myTag_CC max(abs(y_xcc).^2)];
+        myTag_AA = [myTag_AA max(abs(y_xaa).^2)];
 %         close all
 %         plot(obswindow);
 %         drawnow
@@ -167,7 +193,7 @@ end
     save_fname=strcat(string(directory), string(fname));
     save_fname = strcat(save_fname, ".mat");
     disp(save_fname);
-    save(save_fname, 'FTDP_Window', 't_FTDP', 'f_FTDP', 'myfs');
+    save(save_fname, 'FTDP_Window', 't_FTDP', 'f_FTDP', 'myfs', 'myTag_AA', 'myTag_CC');
     disp('creating figures');
     
     
@@ -231,5 +257,14 @@ end
     saveas(doppfreqfig, frequency_path);
     
     close all; % super important
+    
+%% create tag plots
+    tag_path = [save_path, fname, '_scanner.png'];
+    tagfig = figure;
+    plot(myTag_AA,'ro')
+    hold on
+    plot(myTag_CC,'bo')
+    saveas(tagfig, tag_path);
+    close all;
 end
 end

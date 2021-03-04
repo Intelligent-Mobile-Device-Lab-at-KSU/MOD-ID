@@ -24,6 +24,9 @@ disp("using directory: ");
 disp(directory);
 all_files = dir(directory);
 
+% creating output path for cluster
+output_path = directory;
+
 % must create dat_files with same type as all_files
 % keep track of how long it is
 dat_files = all_files;
@@ -190,7 +193,7 @@ end
     
 %% Save .mat files for insurance
     dirtory = dirpath0;
-    save_fname=strcat(string(directory), string(fname));
+    save_fname=strcat(string(output_path), string(fname));
     save_fname = strcat(save_fname, ".mat");
     disp(save_fname);
     save(save_fname, 'FTDP_Window', 't_FTDP', 'f_FTDP', 'myfs', 'myTag_AA', 'myTag_CC');

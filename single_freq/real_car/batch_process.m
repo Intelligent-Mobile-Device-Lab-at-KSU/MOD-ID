@@ -5,13 +5,13 @@ Fs = 1e6; % Samples/Sec, sampling rate
 Fsc = 0e3; %variable
 
 %% Select Doppler Profile Resolution
-highres=1;
+highres=0;
 if highres
     FTDP_adv = 5e-5;%5e-3; % s, sliding window advancement duration
-    winddur = 100;%1; % s, fft window duration
+    winddur = 1; % s, fft window duration
 else
     FTDP_adv = 5e-2;%5e-3; % s, sliding window advancement duration
-    winddur = .1;%1; % s, fft window duration
+    winddur = 1;%1; % s, fft window duration
 end
 
 %% Get Files List
@@ -67,7 +67,7 @@ for findex = 1: dat_L
     f_FTDP = f; % Get FTDP frequency range
 
     pp=wind/2;
-    mm =100;
+    mm =500;
     f_FTDP = f_FTDP(pp-mm:pp+mm-1);
     
 %% Doppler Processing
@@ -94,6 +94,7 @@ for findex = 1: dat_L
     L = length(x);
 for currSlideLoc = 0:FTDP_adv_samps:L-wind
     if  FTDP_Window_ind > nend
+        
         break;
     end
         
@@ -188,7 +189,7 @@ for currSlideLoc = 0:FTDP_adv_samps:L-wind
     % Advance output, report progress
     FTDP_Window_ind = FTDP_Window_ind + 1;
     clc
-    fprintf('Working %s: %.2f%% Complete, file %i/%i\r',fname,100*(currSlideLoc/(L-wind)), findex, dat_L);
+    fprintf('Working %s: %.2f%% Complete, file %i/%i\r',fname,100*(currSlideLoc/(L-wind)), findex, dat_L-1);
 end
     
 %% Save .mat files for insurance

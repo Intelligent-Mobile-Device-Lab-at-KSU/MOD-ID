@@ -50,9 +50,21 @@ displayDopplerSpectra_in_RealTime = 0;
 % Will compute and display the Unaligned Doppler Profile
 showUnalignedDopplerProfile = 0;
 
-dirpath0 = 'ccsv_1_18/';
-fname = 'cw_2car_chengAA_trevorCC4'; % Input raw data file name rccartwosdrs
+dirpath0 = 'jumping_freq/data/';
+fname = 'wavy'; % Input raw data file name rccartwosdrs
 x = read_complex_binary ([dirpath0 fname '.dat'],100e9); % Reads the complex-binary data
+
+% control booleans, ctrl-f to see what they stop/control
+show_spec = true;
+check_jumps = false;
+check_wave = false;
+
+% vars to 0 out frequencies, set manually.
+carriers = [-3.281250 -1.093750 1.093750 3.281250];
+band_w = 1000;
+
+pp = 0;
+mm = 0;
 
 L = length(x);
 for currSlideLoc = 0:FTDP_adv_samps:L-wind
@@ -83,30 +95,43 @@ for currSlideLoc = 0:FTDP_adv_samps:L-wind
      if(currTime<=3)
     %     [cfs,frq] = cwt(segment,Fs);
    % pause
-    continue
+%     continue
      end
     %Fx = fft(blackman(length(segment)).*segment);
     %MFxPos = abs(Fx);%abs(Fx(wind/2+1:end));%abs(Fx(1:wind/2));
     
+
     %MFxPos(1:M) = 0;
     %MFxPos(end-N:end) = 0;
     %plot(MFxPos);
     %drawnow
     %continue
     Fx = fftshift(fft(blackman(length(segment)).*segment));
-    %Fx = fftshift(fft(segment));
-    MFxPos = abs(Fx);%abs(Fx(wind/2+1:end));%abs(Fx(1:wind/2));
-    MFxPos(length(Fx)/2-5:length(Fx)/2+4) = 0;
-    %MFxPos(1:M) = 0;
-    %MFxPos(end-N:end) = 0;
+%     Fx = fftshift(fft(segment));
     pp=length(Fx)/2;
     mm = 100;
+    
+    % zero out carriers:
+    locs = findLocs(Fx);
+    
+    Fx(locs - band_w:locs+band_w) = 0;
+    MFxPos = abs(Fx);%abs(Fx(wind/2+1:end));%abs(Fx(1:wind/2));
+
+    if 1
+        plot(MFxPos)
+        drawnow
+        pause
+%         continue;
+    end
+%     MFxPos(length(Fx)/2-5:length(Fx)/2+4) = 0;
+    %MFxPos(1:M) = 0;
+    %MFxPos(end-N:end) = 0;
 
     FTDP_Window(FTDP_Window_ind,:) = MFxPos(pp-mm:pp+mm-1);
-    if 1
+    if check_wave
     plot(MFxPos(pp-mm:pp+mm-1));
     drawnow
-    %continue
+    continue
     end
     FTDP_Window_ind = FTDP_Window_ind +1;
     clc
@@ -198,18 +223,20 @@ for currSlideLoc = 0:FTDP_adv_samps:L-wind
 end
 
 %% Show Spectrogram
-[rr cc ll] = size(FTDP_Window);
-typ = FTDP_Window(1:rr,:);
-if mean(f_FTDP) < 0
-    %typ = fliplr(FTDP_Window(1:rr,:));
+if show_spec
+    [rr cc ll] = size(FTDP_Window);
+    typ = FTDP_Window(1:rr,:);
+    if mean(f_FTDP) < 0
+        %typ = fliplr(FTDP_Window(1:rr,:));
+    end
+    ampmin=max(max(abs(typ.')))/8;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         ;
+    imagesc(t_FTDP(1:rr),[-mm:(mm-1)],20*log10(max(abs(typ.'),ampmin)/ampmin));
+    title(['Spectrogram: ' fname],'Interpreter','none')
+    ylabel('Frequency (Hz)')
+    xlabel('Time (s)')
+    NumTicks = 4;
+    L = get(gca,'XLim');
+    set(gca,'XTick',round(linspace(t_FTDP(1),t_FTDP(end),NumTicks)))
+    axis('xy')
+    colorbar
 end
-ampmin=max(max(abs(typ.')))/100;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         ;
-imagesc(t_FTDP(1:rr),[-mm:(mm-1)],20*log10(max(abs(typ.'),ampmin)/ampmin));
-title(['Spectrogram: ' fname],'Interpreter','none')
-ylabel('Frequency (Hz)')
-xlabel('Time (s)')
-NumTicks = 4;
-L = get(gca,'XLim');
-set(gca,'XTick',round(linspace(t_FTDP(1),t_FTDP(end),NumTicks)))
-axis('xy')
-colorbar

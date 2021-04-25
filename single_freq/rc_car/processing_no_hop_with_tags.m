@@ -1,11 +1,11 @@
-dirpath0 = '2_10_Q_data/';
-fname = 'test_AA_3'; % Input raw data file name rccartwosdrs
+dirpath0 = 'frequency_jumping_rfid/single_freq/data/';
+fname = 'test'; % Input raw data file name rccartwosdrs
 x = read_complex_binary ([dirpath0 fname '.dat'],100e9); % Reads the complex-binary data
 
 %% Define Constants
 f0= 5.860e9;%5.89e9;
 lambda = physconst('LightSpeed')/f0;
-Fs = 10e6; % Samples/Sec, sampling rate
+Fs = 1e6; % Samples/Sec, sampling rate
 Fsc = 0e3; %variable
 
 
@@ -32,7 +32,7 @@ f = ((-wind/2:wind/2 -1)*Fs/wind)'; % both sides of FFT
 f_FTDP = f; % Get FTDP frequency range
 
 pp=wind/2;
-mm = 100;
+mm = 40;
 f_FTDP = f_FTDP(pp-mm:pp+mm-1);
 
 % Doppler Processing
@@ -97,7 +97,7 @@ for currSlideLoc = 0:FTDP_adv_samps:L-wind
        myfsvals = [myfsvals 0];
     else 
         obswindow(length(obswindow)/2-5:length(obswindow)/2+4) = 0; % remove carrier
-        [pks locs]=findpeaks(obswindow./max(obswindow),'MINPEAKHEIGHT',20,'MINPEAKDISTANCE',10); %leave these settings
+        [pks locs]=findpeaks(obswindow./max(obswindow),'MINPEAKHEIGHT',.79,'MINPEAKDISTANCE',10); %leave these settings
         if length(locs) > 2
             obswindow = obswindow.*0;
         end

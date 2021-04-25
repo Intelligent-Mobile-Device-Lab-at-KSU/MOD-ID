@@ -1,5 +1,5 @@
 dirpath0 = 'data/';
-fname = 'test'; % Input raw data file name rccartwosdrs
+fname = 'triangle'; % Input raw data file name rccartwosdrs
 x = read_complex_binary ([dirpath0 fname '.dat'],100e9); % Reads the complex-binary data
 
 %% Define Constants

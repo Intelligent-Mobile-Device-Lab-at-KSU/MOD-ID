@@ -7,17 +7,17 @@ Fsc = 0e3; %variable
 %% Select Doppler Profile Resolution
 highres=0;
 if highres
-    FTDP_adv = 5e-5;%5e-3; % s, sliding window advancement duration
-    winddur = 1; % s, fft window duration
+    FTDP_adv = 5e-4;%5e-3; % s, sliding window advancement duration
+    winddur = 1;%1; % s, fft window duration
 else
     FTDP_adv = 5e-2;%5e-3; % s, sliding window advancement duration
     winddur = 1;%1; % s, fft window duration
 end
 
 %% Get Files List
-current_direct = pwd;
+current_direct = '~/';
 current_direct = [current_direct];
-directory = '\frequency_jumping_rfid\single_freq\data\';
+directory = 'scratch/data/';
 dirpath0 = '';
 directory = [current_direct directory dirpath0];%strcat(directory, dirpath0);
 disp("using directory: ");
@@ -25,7 +25,7 @@ disp(directory);
 all_files = dir(directory);
 
 % creating output path for cluster
-output_path = directory;
+output_path = '~/proc_data/';
 
 % must create dat_files with same type as all_files
 % keep track of how long it is
@@ -204,7 +204,7 @@ end
 %% create doppler profile plots
     % create directory path and location
     % append save_path for the two outputs
-    save_path = [directory,'/'];
+    save_path = [output_path,'/'];
    
     profile_path = [save_path, fname,'_profile.png'];
     
@@ -246,8 +246,8 @@ end
     t_myfs(indicis) = 0;
     t_myfs(t_myfs<0) = 0;
     
-    disp(length(t_FTDP));
-    disp(length(t_myfs));
+    % disp(length(t_FTDP));
+    % disp(length(t_myfs));
     plot(t_FTDP,t_myfs,'bo','MarkerSize',12, 'LineWidth', 2)
     title(['Doppler Profile'],'Interpreter','none', 'FontSize', labelsize, 'FontWeight', 'bold')
     ylabel('Doppler Frequency (Hz)', 'FontSize', labelsize, 'FontWeight', 'bold')
